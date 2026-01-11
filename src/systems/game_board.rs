@@ -12,6 +12,9 @@ pub struct GridCell {
 }
 
 #[derive(Component)]
+pub struct Occupied;
+
+#[derive(Component)]
 pub struct ResizeMessage;
 
 pub fn setup_game_board(mut commands: Commands) {

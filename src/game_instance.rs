@@ -24,7 +24,6 @@ impl Plugin for GameInstance {
     app.init_resource::<GameSpeed>();
 
     app.add_systems(Startup, (setup_game, spawn_piece).chain());
-
     app.add_systems(Update, (
       check_window_size,
       move_piece,
