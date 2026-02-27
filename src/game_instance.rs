@@ -2,8 +2,9 @@ use bevy::prelude::*;
 use crate::systems::setup_game::setup_game;
 use crate::systems::game_board::check_window_size;
 use crate::components::pieces::{
-  spawn_piece, update_piece_visuals, move_piece, apply_gravity
-  , GameSpeed
+  spawn_piece, update_piece_visuals, move_piece,
+  apply_gravity, clear_lines,
+  GameSpeed
 };
 
 pub struct GameInstance;
@@ -24,10 +25,12 @@ impl Plugin for GameInstance {
     app.init_resource::<GameSpeed>();
 
     app.add_systems(Startup, (setup_game, spawn_piece).chain());
+
     app.add_systems(Update, (
       check_window_size,
       move_piece,
       apply_gravity,
+      clear_lines,
       update_piece_visuals
     ));
   }
