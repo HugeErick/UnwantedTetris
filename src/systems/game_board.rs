@@ -1,6 +1,10 @@
 use crate::utils::color_palette::ColorPalette;
 use bevy::prelude::*;
 
+pub const CELL_SIZE: f32 = 26.0;
+pub const BOARD_COLS: i32 = 10;
+pub const BOARD_ROWS: i32 = 20;
+
 #[derive(Component)]
 pub struct Board;
 
@@ -19,6 +23,9 @@ pub struct ResizeMessage;
 
 pub fn setup_game_board(mut commands: Commands) {
   let color_palette = ColorPalette::default();
+
+  let board_px_w = CELL_SIZE * BOARD_COLS as f32 + 8.0;
+  let board_px_h = CELL_SIZE * BOARD_ROWS as f32 + 8.0;
 
   // Main container (full screen)
   commands
@@ -55,12 +62,12 @@ pub fn setup_game_board(mut commands: Commands) {
       parent.spawn((
         Node {
           display: Display::Grid, 
-          width: Val::Px(308.0),  
-          height: Val::Px(608.0), 
+          width: Val::Px(board_px_w),  
+          height: Val::Px(board_px_h), 
           border: UiRect::all(Val::Px(4.0)),
           padding: UiRect::all(Val::Px(0.0)),
-          grid_template_columns: RepeatedGridTrack::px(10, 30.0),
-          grid_template_rows: RepeatedGridTrack::px(20, 30.0),
+          grid_template_columns: RepeatedGridTrack::px(BOARD_COLS as u16, CELL_SIZE),
+          grid_template_rows: RepeatedGridTrack::px(BOARD_ROWS as u16, CELL_SIZE),
           ..default()
         },
         ZIndex(40),
@@ -69,8 +76,8 @@ pub fn setup_game_board(mut commands: Commands) {
         Board,
       ))
         .with_children(|grid| {
-          for y in 0..20 {
-            for x in 0..10 {
+          for y in 0..BOARD_ROWS {
+            for x in 0..BOARD_COLS {
               grid.spawn((
                 Node {
                   width: Val::Percent(100.0),
@@ -97,8 +104,8 @@ pub fn check_window_size(
   let Ok(mut board_node) = board_query.single_mut() else { return };
   let Ok(mut message_node) = message_query.single_mut() else { return };
 
-  let min_width = 350.0;
-  let min_height = 650.0;
+  let min_width = 300.0;
+  let min_height = 610.0;
 
   if window.width() < min_width || window.height() < min_height {
     board_node.display = Display::None;

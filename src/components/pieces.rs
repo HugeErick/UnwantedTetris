@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::systems::game_board::{Board, GridCell, Occupied};
+use crate::systems::game_board::{Board, GridCell, Occupied, CELL_SIZE};
 use crate::utils::color_palette::ColorPalette;
 
 #[derive(Resource)]
@@ -100,7 +100,7 @@ pub fn spawn_piece(mut commands: Commands, board_query: Query<Entity, With<Board
 
   let mut rng = rand::rng();
   let piece_type = types[rng.random_range(0..types.len())];
-  let color = colors[rng.random_range(0..types.len())];
+  let color = colors[rng.random_range(0..colors.len())];
 
   commands.entity(board_entity).with_children(|parent| {
     parent.spawn((
@@ -123,8 +123,8 @@ pub fn spawn_piece(mut commands: Commands, board_query: Query<Entity, With<Board
           piece_node.spawn((
             Node {
               position_type: PositionType::Absolute,
-              width: Val::Px(30.0),
-              height: Val::Px(30.0),
+              width: Val::Px(CELL_SIZE),
+              height: Val::Px(CELL_SIZE),
               border: UiRect::all(Val::Px(2.0)),
               ..default()
             },
@@ -146,8 +146,8 @@ pub fn update_piece_visuals(
 
     for (child, offset) in children.iter().zip(shape.iter()) {
       if let Ok(mut node) = btarget_query.get_mut(child) {
-        let final_x = (piece.position.x + offset.0) as f32 * 30.0;
-        let final_y = (piece.position.y + offset.1) as f32 * 30.0;
+        let final_x = (piece.position.x + offset.0) as f32 * CELL_SIZE;
+        let final_y = (piece.position.y + offset.1) as f32 * CELL_SIZE;
 
         node.left = Val::Px(final_x);
         node.top = Val::Px(final_y);
