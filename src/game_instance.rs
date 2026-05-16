@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use crate::systems::setup_camera::setup_camera;
 use crate::systems::game_board::check_window_size;
 use crate::systems::menu::{setup_menu, menu_button_interaction, teardown_menu};
+use crate::systems::game_over::{setup_game_over, game_over_input, teardown_game_over};
 use crate::components::pieces::{
   spawn_piece, update_piece_visuals, move_piece,
   apply_gravity, clear_lines,
@@ -13,6 +14,7 @@ pub enum GameState {
   #[default]
   Menu,
   Playing,
+  GameOver,
 }
 
 pub struct GameInstance;
@@ -56,6 +58,13 @@ impl Plugin for GameInstance {
     )
       .run_if(in_state(GameState::Playing)),
     );
+
+    app.add_systems(OnEnter(GameState::GameOver), setup_game_over);
+    app.add_systems(
+      Update,
+      game_over_input.run_if(in_state(GameState::GameOver)),
+    );
+    app.add_systems(OnExit(GameState::GameOver), teardown_game_over);
   }
 }
 

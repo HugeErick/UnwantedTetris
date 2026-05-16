@@ -3,6 +3,7 @@ use rand::prelude::*;
 
 use crate::systems::game_board::{Board, GridCell, Occupied, CELL_SIZE};
 use crate::utils::color_palette::ColorPalette;
+use crate::game_instance::GameState;
 
 #[derive(Resource)]
 pub struct GameSpeed {
@@ -104,33 +105,33 @@ pub fn spawn_piece(mut commands: Commands, board_query: Query<Entity, With<Board
 
   commands.entity(board_entity).with_children(|parent| {
     parent.spawn((
-      ActivePiece {
-        piece_type,
-        position: IVec2::new(4, 0),
-        rotation_index: 0,
-        color,
-      },
-      Node {
-        position_type: PositionType::Absolute,
-        width: Val::Percent(100.0),
-        height: Val::Percent(100.0),
-        ..default()
-      },
-      ZIndex(50),
+        ActivePiece {
+          piece_type,
+          position: IVec2::new(4, 0),
+          rotation_index: 0,
+          color,
+        },
+        Node {
+          position_type: PositionType::Absolute,
+          width: Val::Percent(100.0),
+          height: Val::Percent(100.0),
+          ..default()
+        },
+        ZIndex(50),
     ))
       .with_children(|piece_node| {
         for _ in 0..4 {
           piece_node.spawn((
-            Node {
-              position_type: PositionType::Absolute,
-              width: Val::Px(CELL_SIZE),
-              height: Val::Px(CELL_SIZE),
-              border: UiRect::all(Val::Px(2.0)),
-              ..default()
-            },
-            BackgroundColor(color),
-            BorderColor(color_palette.dark_primary_color().with_alpha(0.3)),
-            PieceBtarget,
+              Node {
+                position_type: PositionType::Absolute,
+                width: Val::Px(CELL_SIZE),
+                height: Val::Px(CELL_SIZE),
+                border: UiRect::all(Val::Px(2.0)),
+                ..default()
+              },
+              BackgroundColor(color),
+              BorderColor(color_palette.dark_primary_color().with_alpha(0.3)),
+              PieceBtarget,
           ));
         }
       });
@@ -173,7 +174,7 @@ pub fn move_piece(
     if keyboard_input.just_pressed(KeyCode::ArrowUp) {
       let next_rotation = (piece.rotation_index + 1) % 4;
       let kicks = piece.piece_type.get_wall_kick_offset();
-      
+
       for offset in kicks {
         let test_pos = piece.position + offset;
         if is_valid_move(piece.position, piece.piece_type, next_rotation, &occupied_cells) {
@@ -249,6 +250,7 @@ pub fn apply_gravity(
   board_query: Query<Entity, With<Board>>,
   mut cell_query: Query<(Entity, &GridCell, &mut BackgroundColor, Option<&Occupied>)>,
   occupied_cells: Query<&GridCell, With<Occupied>>,
+  mut next_state: ResMut<NextState<GameState>>,
 ) {
   game_speed.timer.tick(time.delta());
 
@@ -274,6 +276,13 @@ pub fn apply_gravity(
         }
       }
       commands.entity(entity).despawn();
+
+      let topped_out = occupied_cells.iter().any(|cell| cell.y == 0);
+      if topped_out {
+        next_state.set(GameState::GameOver);
+        return;
+      }
+
       spawn_piece(commands, board_query);
       info!("Piece targeted, spawning new one");
     }
@@ -337,3 +346,4 @@ pub fn clear_lines(
     }
   }
 }
+
