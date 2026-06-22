@@ -177,7 +177,7 @@ pub fn move_piece(
 
       for offset in kicks {
         let test_pos = piece.position + offset;
-        if is_valid_move(piece.position, piece.piece_type, next_rotation, &occupied_cells) {
+        if is_valid_move(test_pos, piece.piece_type, next_rotation, &occupied_cells) {
           piece.position = test_pos;
           piece.rotation_index = next_rotation;
           break;
@@ -277,7 +277,10 @@ pub fn apply_gravity(
       }
       commands.entity(entity).despawn();
 
-      let topped_out = occupied_cells.iter().any(|cell| cell.y == 0);
+      let topped_out = shape.iter().any(|offset| {
+        let y = pos.y + offset.1;
+        y <=0
+      });
       if topped_out {
         next_state.set(GameState::GameOver);
         return;

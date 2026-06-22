@@ -37,6 +37,7 @@ impl Plugin for GameInstance {
 
     // start systems
     app.add_systems(Startup, setup_camera);
+    app.add_systems(Update, esc_handler);
     app.add_systems(OnEnter(GameState::Menu), setup_menu);
     app.add_systems(
       Update,
@@ -70,5 +71,26 @@ impl Plugin for GameInstance {
 
 fn setup_game_board_entry(commands: Commands) {
   crate::systems::game_board::setup_game_board(commands);
+}
+
+fn esc_handler(
+  keys: Res<ButtonInput<KeyCode>>,
+  current_state: Res<State<GameState>>,
+  mut next_state: ResMut<NextState<GameState>>,
+  mut exit: EventWriter<bevy::app::AppExit>,
+) {
+  if !keys.just_pressed(KeyCode::Escape) {
+    return;
+  }
+
+  match current_state.get() {
+    GameState::Playing => {
+      next_state.set(GameState::Menu);
+    }
+
+    GameState::Menu | GameState::GameOver => {
+      exit.write(bevy::app::AppExit::Success);
+    }
+  }
 }
 
